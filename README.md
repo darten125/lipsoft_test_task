@@ -1,41 +1,36 @@
 # test_task
+## API для просмотра транзакций
+#Пагинация
+Пагинация реализована с помощью Keyset метода: имеем размер страницы: 20 (согласно условию задачи)\
+и курсор - date_time значение последней из 20 переданных транзакций. Если хотим получить следующие 20 транзакций,\
+то передаем в запрос курсор, и система выдаст нам следующие 20 транзакций, date_time которых > cursor.\
+Для получения первых 20 транзакций cursor не указываем. Если при первом запросе транзакций пришло\
+меньше, чем 20, то соответственно, транзакций с таким фильтром меньше 20.
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
+#Запросы
+* **/update_transactions_data** - POST-запрос. На входе ожидает файлы incomes.csv и outcomes.csv
+  Потоково загружает файлы в локальную базу данных внутри микросервиса. При повторном вызове\
+  перезаписывает данные внутри базы данных. При успешной записи данных возвращает сообщение об этом\
+* **/get_user_transactions** - GET-запрос. На входе ожидает ID пользователя и (опционально)\
+  значение для курсора пагинации. Возвращает список транзакций пользователя размера от 0 до 20.\
+  Транзакции идут от самых последних к самым ранним.\
+* **/get_user_account_transactions** - GET-запрос. На входе ожидает ID пользователя, ID счета и (опционально)\
+  значение для курсора пагинации. Возвращает список транзакций пользователя по конкретному счету. Список размера от 0 до 20.\
+  Транзакции идут от самых последних к самым ранним.\
+* **/get_user_transactions_by_date** - GET-запрос. На входе ожидает ID пользователя, дату совершения транзакций и (опционально)\
+  значение для курсора пагинации. Возвращает список транзакций пользователя, выполненных в указанную дату. Список размера от 0 до 20.\
+  Дата формата YYYY-MM-DD. Транзакции идут от самых последних к самым ранним.\
+ * **/get_user_account_transactions_by_date** - GET-запрос. На входе ожидает ID пользователя, ID счета, дату совершения транзакций,\
+   и (опционально) значение для курсора пагинации. Возвращает список транзакций пользователя по конкретному счету, выполненных в указанную дату.\
+   Список размера от 0 до 20. Дата формата YYYY-MM-DD. Транзакции идут от самых последних к самым ранним.\
 
-Here are some useful links to get you started:
+#База данных
+DuckDB
 
-- [Ktor Documentation](https://ktor.io/docs/home.html)
-- [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
+#Тесты
+Для всех 4 запросов написан единый тест в файле RequestsTests. В нем на небольшом тестовом искусственном наборе данных проверяется\
+корректность результатов работы запросов.\
+**Важно:** тестовый вызов /update_transactions_data все еще работает с изначальной базой данных, перезаписывая ее. После\
+теста необходимо снова загрузить рабочие incomes.csv и outcomes.csv файлы с помощью /update_transactions_data при запуске микросервиса.
 
-## Features
-
-Here's a list of features included in this project:
-
-| Name                                                                   | Description                                                                        |
-| ------------------------------------------------------------------------|------------------------------------------------------------------------------------ |
-| [Content Negotiation](https://start.ktor.io/p/content-negotiation)     | Provides automatic content conversion according to Content-Type and Accept headers |
-| [Routing](https://start.ktor.io/p/routing)                             | Provides a structured routing DSL                                                  |
-| [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library                     |
-
-## Building & Running
-
-To build or run the project, use one of the following tasks:
-
-| Task                          | Description                                                          |
-| -------------------------------|---------------------------------------------------------------------- |
-| `./gradlew test`              | Run the tests                                                        |
-| `./gradlew build`             | Build everything                                                     |
-| `buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
-| `buildImage`                  | Build the docker image to use with the fat JAR                       |
-| `publishImageToLocalRegistry` | Publish the docker image locally                                     |
-| `run`                         | Run the server                                                       |
-| `runDocker`                   | Run using the local docker image                                     |
-
-If the server starts successfully, you'll see the following output:
-
-```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
-```
-
+   
